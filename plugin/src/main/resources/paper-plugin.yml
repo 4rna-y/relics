@@ -1,0 +1,9 @@
+name: Relics
+version: '${version}'
+main: io.github.relics.RelicsPlugin
+api-version: '1.21'
+description: 高難易度の報酬として出る特別なアイテム (異次元チェスト・スナイパーライフル) の振る舞い
+permissions:
+  relics.admin:
+    description: アイテムの配布と状態の確認 (/relics give|status)
+    default: op

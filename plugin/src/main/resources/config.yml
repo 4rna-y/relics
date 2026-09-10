@@ -1,0 +1,27 @@
+# Relics — 高難易度の報酬として出る特別なアイテムの振る舞い。
+# アイテムそのものは RaidEvent のクレート (custom: dimensional_chest / sniper_rifle) が作る。
+# このプラグインが居ないと、それらは名前の付いた飾りになる。
+
+enabled: true
+
+# メッセージの接頭辞 (MiniMessage 形式)。
+message-prefix: "<gray>[<light_purple>Relics<gray>]</gray> "
+
+# 異次元チェスト: 設置できない。右クリックで自分だけの倉庫を開く。中身はプレイヤーの PDC (ワールドと運命を共にする)。
+vault:
+  # 倉庫の大きさ (9 の倍数、最大 54)。
+  size: 54
+  title: "異次元チェスト"
+
+# スナイパーライフル: 覗いている間に左クリックで発射。弾はアメジストの欠片 1 個。
+sniper:
+  # 当たった生き物へのダメージ。ゾンビ (20 HP) を一撃にする値。
+  damage: 24
+  # 射程 (ブロック)。ブロックに遮られる。
+  range: 128
+  # 発射後のクールタイム (tick)。
+  cooldown-ticks: 20
+  # 壊れるまでの発射数。
+  shots: 200
+  # プレイヤーにも当てるか。協力サーバーでは false。
+  hit-players: false
