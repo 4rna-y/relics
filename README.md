@@ -1,8 +1,9 @@
 # Relics
 
-高難易度の報酬として出る特別なアイテムの**振る舞い**を持つ Paper プラグイン。アイテムそのものは
-[`raid_event`](../raid_event) の L7/L8 のクレートの目玉枠 (`custom: dimensional_chest` / `sniper_rifle`) が作る
-(`CustomItems`)。このプラグインが居ないと、それらは名前の付いた飾りになる。
+高難易度の報酬として出る特別なアイテムの**振る舞い**を持つ Paper プラグイン。異次元チェストとスナイパーライフルは
+[`raid_event`](../raid_event) の L7/L8 のクレートの目玉枠 (`custom: dimensional_chest` / `sniper_rifle`) も作る
+(`CustomItems`)。このプラグインが居ないと、それらは名前の付いた飾りになる。爆裂弓は今のところ `/relics give` でだけ出る
+(クレートに載せるときは RaidEvent の `CustomItems` と `config.yml` にも足す)。
 
 | モジュール | 中身 |
 | --- | --- |
@@ -20,6 +21,7 @@ RaidEvent の `CustomItems` と土台・印を揃えてあるので、変える�
 | --- | --- | --- |
 | `dimensional_chest` | エンダーチェスト | 異次元チェスト |
 | `sniper_rifle` | 望遠鏡 | スナイパーライフル (PDC `relics:shots` に発射数) |
+| `explosive_bow` | 弓 | 爆裂弓 (放った矢に PDC `relics:explosive_arrow` の印が付く) |
 
 ## 異次元チェスト
 
@@ -40,11 +42,22 @@ RaidEvent の `CustomItems` と土台・印を揃えてあるので、変える�
 - プレイヤーには当たらない (`sniper.hit-players: false`。協力サーバーでの誤射防止)。
 - 軌跡のパーティクルと音。アクションバーに残弾。**200 発 (`sniper.shots`) で壊れる**。
 
+## 爆裂弓
+
+- 放った矢が**敵対モブ (`Enemy`) に命中**すると、命中地点で爆発する (`explosive-bow.power`、既定 2.0。クリーパーが 3.0)。
+- 爆発は**ブロックを壊さず、火も点けない**。ただし**近くの仲間もプレイヤー自身も巻き込む**。
+- 敵対モブ以外 (プレイヤー・村人・動物) とブロックに当たったときは爆発しない。
+- 追加の対価は無く、弓はバニラの耐久値で減る。修繕も効く。
+- 撃った時点で矢に印を付ける (命中したときには弓が手から離れているかもしれないため)。爆発ダメージの帰属は射手なので、
+  討伐の扱い (Buftasks のタスクなど) は自分で倒したのと同じ。
+- Modifier の「地雷系」を選んでいる人がこの弓を撃つと、**爆発は 2 回重なる** (向こうの対価の満腹度も 1 減る)。
+  relics は他プラグインを知らないままにしてある。
+
 ## コマンド
 
 `/relics` — 権限 `relics.admin` (既定: OP)
 
-- `give <player> <dimensional_chest|sniper_rifle> [amount]` — 渡す (動作確認用。本来はレイドの報酬)
+- `give <player> <dimensional_chest|sniper_rifle|explosive_bow> [amount]` — 渡す (動作確認用。本来はレイドの報酬)
 - `status` — 版と設定
 
 ## 設定 (`plugins/Relics/config.yml`)
@@ -55,6 +68,7 @@ RaidEvent の `CustomItems` と土台・印を揃えてあるので、変える�
 | `message-prefix` | `[Relics] ` | 返答の接頭辞 (MiniMessage) |
 | `vault.size` / `title` | `54` / `異次元チェスト` | 倉庫の大きさ (9 の倍数、最大 54) と題 |
 | `sniper.damage` / `range` / `cooldown-ticks` / `shots` / `hit-players` | `24` / `128` / `20` / `200` / `false` | スナイパーライフル |
+| `explosive-bow.power` | `2.0` | 爆裂弓の爆発の強さ |
 
 ## 開発
 
@@ -62,7 +76,7 @@ RaidEvent の `CustomItems` と土台・印を揃えてあるので、変える�
 $ nix develop
 $ gradle :plugin:test      # 既定値と印
 $ gradle :plugin:build
-$ smoke/run.sh             # 26.1 の使い捨てサーバー + mineflayer で、倉庫の出し入れ・設置拒否・射撃を一周
+$ smoke/run.sh             # 26.1 の使い捨てサーバー + mineflayer で、倉庫の出し入れ・設置拒否・射撃・爆発を一周
 ```
 
 通し確認は `Modifier/e2e` が落とした 26.1 の Paper と node_modules を借りる。

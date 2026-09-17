@@ -1,5 +1,5 @@
 'use strict';
-// Relics の通し確認: 異次元チェストの出し入れと設置拒否、スナイパーライフルの射撃。観測を JSON で流す。
+// Relics の通し確認: 異次元チェストの出し入れと設置拒否、スナイパーライフルの射撃、爆裂弓の爆発。観測を JSON で流す。
 const mineflayer = require('mineflayer');
 const { Vec3 } = require('vec3');
 
@@ -28,8 +28,9 @@ bot.once('spawn', async () => {
   try {
     emit('spawned', { pos: bot.entity.position });
     // 道具が届くのを待つ
-    await waitFor(() => count('ender_chest') > 0 && count('spyglass') > 0 && count('amethyst_shard') > 0, 20000);
-    emit('items', { chest: count('ender_chest'), rifle: count('spyglass'), shards: count('amethyst_shard') });
+    await waitFor(() => count('ender_chest') > 0 && count('spyglass') > 0 && count('amethyst_shard') > 0
+      && count('bow') > 0 && count('arrow') > 0, 20000);
+    emit('items', { chest: count('ender_chest'), rifle: count('spyglass'), shards: count('amethyst_shard'), bow: count('bow'), arrows: count('arrow') });
 
     // ---- 異次元チェスト: 開く → アメジストを入れる → 閉じる → 開き直す
     const chest = bot.inventory.items().find((i) => i.name === 'ender_chest');
@@ -91,6 +92,35 @@ bot.once('spawn', async () => {
     await sleep(1200);
     bot.deactivateItem();
     emit('double_swing', { shardsAfter: count('amethyst_shard'), actionBars: actionBars.slice(-2) });
+
+    // ---- 爆裂弓: 敵対モブに当てると爆発する。証人としてゾンビの隣にニワトリ (4 HP) を置き、
+    // 巻き添えで死ぬことを見る。ニワトリ自身に当てても爆発しないこと (敵対モブ限定) は単体では見分けにくいので、
+    // ここでは爆発が起きることだけを確かめる。
+    const bowAt = feet.offset(-7, 0, 0);
+    emit('summon_here', { cmd: `summon zombie ${bowAt.x + 0.5} ${bowAt.y} ${bowAt.z + 0.5} {NoAI:1b,PersistenceRequired:1b}` });
+    emit('summon_here', { cmd: `summon chicken ${bowAt.x + 0.5} ${bowAt.y} ${bowAt.z + 2.5} {NoAI:1b,PersistenceRequired:1b}` });
+    const near = (name) => Object.values(bot.entities)
+      .filter((e) => e.name === name)
+      .sort((a, b) => a.position.distanceTo(bowAt) - b.position.distanceTo(bowAt))[0];
+    const ready = await waitFor(() => near('zombie') && near('chicken'), 15000);
+    emit('bow_targets', { ready, zombie: near('zombie') && near('zombie').position, chicken: near('chicken') && near('chicken').position });
+    const bow = bot.inventory.items().find((i) => i.name === 'bow');
+    await bot.equip(bow, 'hand');
+    const arrowsBefore = count('arrow');
+    let chickenGone = false;
+    for (let shot = 1; shot <= 3 && !chickenGone; shot += 1) {
+      const target = near('zombie');
+      if (!target) break;
+      await bot.lookAt(target.position.offset(0, 1.0, 0), true);
+      await sleep(300);
+      bot.activateItem();
+      await sleep(1200);
+      bot.deactivateItem();
+      await sleep(1200);
+      chickenGone = !near('chicken');
+      emit('bow_shot', { shot, chickenGone, arrowsLeft: count('arrow') });
+    }
+    emit('explosion', { chickenKilledByBlast: chickenGone, arrowsBefore, arrowsAfter: count('arrow') });
     emit('done');
   } catch (e) {
     emit('scenario_error', { message: String(e && e.stack || e) });

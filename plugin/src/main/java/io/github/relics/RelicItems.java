@@ -16,16 +16,23 @@ import org.bukkit.persistence.PersistentDataType;
 /**
  * 特別なアイテムの印と作り方。土台アイテム + PDC {@code relics:item} + 名前。
  *
- * <p>RaidEvent の {@code CustomItems} が同じ印で作る。土台と印を変えるときは両方を直すこと。
+ * <p>異次元チェストとスナイパーライフルは RaidEvent の {@code CustomItems} も同じ印で作る。土台と印を変えるときは
+ * 両方を直すこと。爆裂弓は今のところ relics だけが作る (クレートに載せるときは CustomItems にも足す)。
  */
 public final class RelicItems {
 
     public static final String DIMENSIONAL_CHEST = "dimensional_chest";
     public static final String SNIPER_RIFLE = "sniper_rifle";
+    public static final String EXPLOSIVE_BOW = "explosive_bow";
+
+    /** 配れるアイテムの一覧 (/relics give とタブ補完)。 */
+    public static final List<String> IDS = List.of(DIMENSIONAL_CHEST, SNIPER_RIFLE, EXPLOSIVE_BOW);
 
     public static final NamespacedKey ITEM = new NamespacedKey("relics", "item");
     /** スナイパーライフルの発射数。 */
     public static final NamespacedKey SHOTS = new NamespacedKey("relics", "shots");
+    /** 爆裂弓から放たれた矢に付ける印 (矢そのものの PDC)。 */
+    public static final NamespacedKey EXPLOSIVE_ARROW = new NamespacedKey("relics", "explosive_arrow");
 
     private RelicItems() {
     }
@@ -34,6 +41,7 @@ public final class RelicItems {
         return switch (id) {
             case DIMENSIONAL_CHEST -> Optional.of(Material.ENDER_CHEST);
             case SNIPER_RIFLE -> Optional.of(Material.SPYGLASS);
+            case EXPLOSIVE_BOW -> Optional.of(Material.BOW);
             default -> Optional.empty();
         };
     }
@@ -71,6 +79,15 @@ public final class RelicItems {
                 });
                 yield item;
             }
+            case EXPLOSIVE_BOW -> {
+                // 弓は重ねられないので amount は見ない (スナイパーライフルと同じ)
+                ItemStack item = ItemStack.of(Material.BOW, 1);
+                name(item, "爆裂弓", NamedTextColor.RED);
+                lore(item, explosiveBowLore());
+                item.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+                item.editPersistentDataContainer(pdc -> pdc.set(ITEM, PersistentDataType.STRING, EXPLOSIVE_BOW));
+                yield item;
+            }
             default -> throw new IllegalArgumentException("知らないアイテム: " + id);
         };
     }
@@ -78,6 +95,12 @@ public final class RelicItems {
     /** スナイパーライフルの説明。残弾を入れる。 */
     public static List<String> sniperLore(int remaining) {
         return List.of("覗いている間に左クリックで発射", "弾: アメジストの欠片 1 個", "残り " + remaining + " 発");
+    }
+
+    /** 爆裂弓の説明。 */
+    public static List<String> explosiveBowLore() {
+        return List.of("放った矢が敵対モブに当たると、命中地点で爆発する",
+                "ブロックは壊れず、火も点かない。近くの仲間は巻き込む");
     }
 
     /** これまでの発射数。印が無ければ 0。 */

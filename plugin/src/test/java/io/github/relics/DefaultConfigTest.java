@@ -36,17 +36,23 @@ class DefaultConfigTest {
         assertEquals(RelicsPlugin.DEFAULT_SNIPER_COOLDOWN_TICKS, config.getInt("sniper.cooldown-ticks"));
         assertEquals(RelicsPlugin.DEFAULT_SNIPER_SHOTS, config.getInt("sniper.shots"));
         assertFalse(config.getBoolean("sniper.hit-players"));
+        assertEquals(RelicsPlugin.DEFAULT_EXPLOSIVE_BOW_POWER, config.getDouble("explosive-bow.power"), 1e-9);
     }
 
     @Test
-    @DisplayName("土台は RaidEvent の CustomItems と同じ (エンダーチェスト・望遠鏡)、ゾンビは一撃")
+    @DisplayName("土台は RaidEvent の CustomItems と同じ (エンダーチェスト・望遠鏡)・爆裂弓は弓、ゾンビは一撃")
     void items() {
         assertEquals(Material.ENDER_CHEST, RelicItems.baseOf(RelicItems.DIMENSIONAL_CHEST).orElseThrow());
         assertEquals(Material.SPYGLASS, RelicItems.baseOf(RelicItems.SNIPER_RIFLE).orElseThrow());
+        assertEquals(Material.BOW, RelicItems.baseOf(RelicItems.EXPLOSIVE_BOW).orElseThrow());
         assertTrue(RelicItems.baseOf("mace").isEmpty());
+        assertEquals(List.of("dimensional_chest", "sniper_rifle", "explosive_bow"), RelicItems.IDS);
+        RelicItems.IDS.forEach(id -> assertTrue(RelicItems.baseOf(id).isPresent(), id + " の土台が無い"));
         assertTrue(RelicsPlugin.DEFAULT_SNIPER_DAMAGE >= 20, "ゾンビ (20 HP) を一撃にする");
         assertEquals("relics:item", RelicItems.ITEM.toString());
         assertEquals(List.of("覗いている間に左クリックで発射", "弾: アメジストの欠片 1 個", "残り 199 発"), RelicItems.sniperLore(199));
+        assertEquals(2, RelicItems.explosiveBowLore().size());
+        assertTrue(RelicItems.explosiveBowLore().getFirst().contains("敵対モブ"), "爆発するのが敵対モブ限定だと書いてある");
     }
 
     static YamlConfiguration loadBundledConfig() {

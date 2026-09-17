@@ -12,10 +12,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-/** {@code /relics give <player> <dimensional_chest|sniper_rifle> [amount]} と {@code /relics status}。管理者向け。 */
+/** {@code /relics give <player> <id> [amount]} と {@code /relics status}。管理者向け。 */
 public final class RelicsCommand implements BasicCommand {
 
-    private static final List<String> ITEMS = List.of(RelicItems.DIMENSIONAL_CHEST, RelicItems.SNIPER_RIFLE);
+    private static final List<String> ITEMS = RelicItems.IDS;
+    private static final String USAGE = "/relics give <player> <" + String.join("|", ITEMS) + "> [amount]";
 
     private final RelicsPlugin plugin;
 
@@ -37,15 +38,16 @@ public final class RelicsCommand implements BasicCommand {
             case "status" -> {
                 sender.sendMessage(plugin.message("<gray>Relics " + plugin.getPluginMeta().getVersion()
                         + " / 倉庫 " + plugin.vaultSize() + " マス / スナイパー " + plugin.sniperDamage() + " ダメージ・"
-                        + plugin.sniperRange() + " m・" + plugin.sniperShots() + " 発"));
+                        + plugin.sniperRange() + " m・" + plugin.sniperShots() + " 発 / 爆裂弓 威力 "
+                        + plugin.explosiveBowPower()));
             }
-            default -> sender.sendMessage(plugin.message("<red>使い方: /relics give <player> <dimensional_chest|sniper_rifle> [amount] | status"));
+            default -> sender.sendMessage(plugin.message("<red>使い方: " + USAGE + " | status"));
         }
     }
 
     private void give(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            sender.sendMessage(plugin.message("<red>使い方: /relics give <player> <dimensional_chest|sniper_rifle> [amount]"));
+            sender.sendMessage(plugin.message("<red>使い方: " + USAGE));
             return;
         }
         Player target = Bukkit.getPlayerExact(args[1]);

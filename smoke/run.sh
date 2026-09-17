@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 #
 # 通し確認: 使い捨ての 26.1 サーバーを立て、ヘッドレスクライアントで
-# 異次元チェスト (開く → 入れる → 閉じる → 開き直す → 残っている、設置できない) と
-# スナイパーライフル (覗いて左クリック → 8 m 先のゾンビが死ぬ、弾が減る) を一周する。
+# 異次元チェスト (開く → 入れる → 閉じる → 開き直す → 残っている、設置できない)、
+# スナイパーライフル (覗いて左クリック → 8 m 先のゾンビが死ぬ、弾が減る)、
+# 爆裂弓 (ゾンビに当てる → 爆発して隣のニワトリが死ぬ) を一周する。
 #
 # 前提: ../plugin/build/libs/Relics-*.jar、../../Modifier/e2e/build/paper/paper-26.1*.jar、
 #       ../../Modifier/e2e/bot/node_modules、JAVA_HOME (nix develop の中で実行)
@@ -51,6 +52,7 @@ cp "$JAR" "$SERVER/plugins/"
 cleanup() {
     [ -n "${PAPER_PID:-}" ] && kill -0 "$PAPER_PID" 2>/dev/null && { echo stop > "$FIFO"; sleep 5; kill "$PAPER_PID" 2>/dev/null || true; }
     [ -n "${HOLDER_PID:-}" ] && kill "$HOLDER_PID" 2>/dev/null || true
+    [ -n "${SUMMONER_PID:-}" ] && kill "$SUMMONER_PID" 2>/dev/null || true
     rm -f "$FIFO"
 }
 trap cleanup EXIT
@@ -81,22 +83,31 @@ sleep 2
 echo "op Tester" > "$FIFO"
 echo "relics give Tester dimensional_chest" > "$FIFO"
 echo "relics give Tester sniper_rifle" > "$FIFO"
+echo "relics give Tester explosive_bow" > "$FIFO"
 echo "give Tester amethyst_shard 8" > "$FIFO"
-# ボットが位置を報告したらゾンビを湧かせる
-for _ in $(seq 1 60); do
-    grep -q '"event":"summon_here"' "$SERVER/bot.out" && break
-    sleep 0.5
-done
-POS="$(grep '"event":"summon_here"' "$SERVER/bot.out" | head -1 | sed -E 's/.*"cmd":"([^"]*)".*/\1/')"
-[ -n "$POS" ] && echo "$POS" > "$FIFO"
+echo "give Tester arrow 32" > "$FIFO"
+# ボットは湧かせてほしいモブを summon_here で頼んでくる。増えるたびにコンソールへ流す。
+# tail -f は使わない (パイプの子が残って run.sh の出力が閉じなくなる)。ボットが終われば見張りも止まる
+( sent=0
+  while kill -0 "$BOT_PID" 2>/dev/null; do
+      asked="$(grep -c '"event":"summon_here"' "$SERVER/bot.out" 2>/dev/null || true)"
+      while [ "${asked:-0}" -gt "$sent" ]; do
+          sent=$((sent + 1))
+          cmd="$(grep '"event":"summon_here"' "$SERVER/bot.out" | sed -n "${sent}p" | sed -E 's/.*"cmd":"([^"]*)".*/\1/')"
+          [ -n "$cmd" ] && echo "$cmd" > "$FIFO"
+      done
+      sleep 0.5
+  done ) &
+SUMMONER_PID=$!
 wait "$BOT_PID" || true
+kill "$SUMMONER_PID" 2>/dev/null || true
 
 echo
 echo "== 観測 (bot.out)"
 grep -v '"event":"chat"' "$SERVER/bot.out"
 echo
 echo "== サーバーの Relics ログ"
-grep "\[Relics\]\|Summoned\|zombie" "$SERVER/server.log" | tail -6 | cut -c1-160
+grep "\[Relics\]\|Summoned\|zombie\|chicken" "$SERVER/server.log" | tail -8 | cut -c1-160
 echo
 echo "== サーバーの例外"
 if grep -q "Exception" "$SERVER/server.log"; then

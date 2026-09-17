@@ -17,6 +17,7 @@ public final class RelicsPlugin extends JavaPlugin {
     public static final double DEFAULT_SNIPER_RANGE = 128;
     public static final int DEFAULT_SNIPER_COOLDOWN_TICKS = 20;
     public static final int DEFAULT_SNIPER_SHOTS = 200;
+    public static final double DEFAULT_EXPLOSIVE_BOW_POWER = 2.0;
 
     private VaultListener vault;
 
@@ -30,9 +31,11 @@ public final class RelicsPlugin extends JavaPlugin {
         this.vault = new VaultListener(this, new VaultStore());
         getServer().getPluginManager().registerEvents(vault, this);
         getServer().getPluginManager().registerEvents(new SniperListener(this), this);
+        getServer().getPluginManager().registerEvents(new ExplosiveBowListener(this), this);
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->
                 event.registrar().register("relics", "特別なアイテムの配布と確認", List.of(), new RelicsCommand(this)));
-        getSLF4JLogger().info("倉庫 {} マス / スナイパー {} ダメージ・{} m・{} 発", vaultSize(), sniperDamage(), sniperRange(), sniperShots());
+        getSLF4JLogger().info("倉庫 {} マス / スナイパー {} ダメージ・{} m・{} 発 / 爆裂弓 威力 {}",
+                vaultSize(), sniperDamage(), sniperRange(), sniperShots(), explosiveBowPower());
     }
 
     @Override
@@ -66,6 +69,11 @@ public final class RelicsPlugin extends JavaPlugin {
 
     public int sniperShots() {
         return Math.max(1, getConfig().getInt("sniper.shots", DEFAULT_SNIPER_SHOTS));
+    }
+
+    /** 爆裂弓の爆発の強さ。クリーパーが 3.0。 */
+    public float explosiveBowPower() {
+        return (float) Math.max(0, getConfig().getDouble("explosive-bow.power", DEFAULT_EXPLOSIVE_BOW_POWER));
     }
 
     public boolean sniperHitsPlayers() {

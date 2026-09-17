@@ -1,5 +1,6 @@
 # Relics — 高難易度の報酬として出る特別なアイテムの振る舞い。
-# アイテムそのものは RaidEvent のクレート (custom: dimensional_chest / sniper_rifle) が作る。
+# 異次元チェストとスナイパーライフルは RaidEvent のクレート (custom: dimensional_chest / sniper_rifle) も作る。
+# 爆裂弓は今のところ /relics give でのみ出る。
 # このプラグインが居ないと、それらは名前の付いた飾りになる。
 
 enabled: true
@@ -25,3 +26,8 @@ sniper:
   shots: 200
   # プレイヤーにも当てるか。協力サーバーでは false。
   hit-players: false
+
+# 爆裂弓: 放った矢が敵対モブに当たると、命中地点で爆発する。追加の対価は無く、弓はバニラの耐久値で減る。
+explosive-bow:
+  # 爆発の強さ。クリーパーが 3.0。ブロックは壊さず、火も点けない。
+  power: 2.0
