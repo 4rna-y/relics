@@ -16,8 +16,9 @@ import org.bukkit.persistence.PersistentDataType;
 /**
  * 特別なアイテムの印と作り方。土台アイテム + PDC {@code relics:item} + 名前。
  *
- * <p>異次元チェストとスナイパーライフルは RaidEvent の {@code CustomItems} も同じ印で作る。土台と印を変えるときは
- * 両方を直すこと。爆裂弓は今のところ relics だけが作る (クレートに載せるときは CustomItems にも足す)。
+ * <p>3 種とも RaidEvent の {@code CustomItems} が同じ印で作る (異次元チェストは L8 のマイナー/マジカル、
+ * スナイパーライフルは L7/L8 のソルジャー、爆裂弓は L6/L7 のソルジャーの目玉枠)。
+ * 土台と印を変えるときは両方を直すこと。
  */
 public final class RelicItems {
 

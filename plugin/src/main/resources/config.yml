@@ -1,6 +1,5 @@
 # Relics — 高難易度の報酬として出る特別なアイテムの振る舞い。
-# 異次元チェストとスナイパーライフルは RaidEvent のクレート (custom: dimensional_chest / sniper_rifle) も作る。
-# 爆裂弓は今のところ /relics give でのみ出る。
+# 3 種とも RaidEvent のクレート (custom: dimensional_chest / sniper_rifle / explosive_bow) も作る。
 # このプラグインが居ないと、それらは名前の付いた飾りになる。
 
 enabled: true

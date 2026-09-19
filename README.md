@@ -1,9 +1,9 @@
 # Relics
 
-高難易度の報酬として出る特別なアイテムの**振る舞い**を持つ Paper プラグイン。異次元チェストとスナイパーライフルは
-[`raid_event`](../raid_event) の L7/L8 のクレートの目玉枠 (`custom: dimensional_chest` / `sniper_rifle`) も作る
-(`CustomItems`)。このプラグインが居ないと、それらは名前の付いた飾りになる。爆裂弓は今のところ `/relics give` でだけ出る
-(クレートに載せるときは RaidEvent の `CustomItems` と `config.yml` にも足す)。
+高難易度の報酬として出る特別なアイテムの**振る舞い**を持つ Paper プラグイン。3 種とも
+[`raid_event`](../raid_event) のクレートの目玉枠が作る (`CustomItems`): 異次元チェストは L8 のマイナー/マジカル
+(`custom: dimensional_chest`)、スナイパーライフルは L7/L8 のソルジャー (`sniper_rifle`)、
+爆裂弓は L6/L7 のソルジャー (`explosive_bow`)。このプラグインが居ないと、それらは名前の付いた飾りになる。
 
 | モジュール | 中身 |
 | --- | --- |
